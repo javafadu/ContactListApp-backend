@@ -9,6 +9,7 @@ import com.contactlistapp.dto.request.UserRegisterRequest;
 import com.contactlistapp.dto.request.UserUpdateRequest;
 import com.contactlistapp.dto.response.UserRegisterResponse;
 import com.contactlistapp.dto.response.UserResponse;
+import com.contactlistapp.exception.BadRequestException;
 import com.contactlistapp.exception.ConflictException;
 import com.contactlistapp.exception.ResourceNotFoundException;
 import com.contactlistapp.exception.message.ErrorMessage;
@@ -50,7 +51,6 @@ class UserServiceTest {
     private static Pageable pageable = PageRequest.of(0, 5, Sort.by("registerDate", "DESC"));
 
 
-
     @Test
     void registerWithNewEmail() {
 
@@ -63,7 +63,7 @@ class UserServiceTest {
 
         Role role = new Role();
         role.setName(RoleType.ROLE_BASIC);
-        role.setId(5);
+        role.setId(1);
         roles.add(role);
 
         User user = new User();
@@ -72,7 +72,8 @@ class UserServiceTest {
         user.setId(1L);
         user.setName("Name Surname");
         user.setEmail("mail1@mail.com");
-        user.setPassword(userService.encodePassword("12345"));
+        String passwordStr = "12345";
+        user.setPassword(userService.encodePassword(passwordStr));
         user.setRegisterDate(LocalDateTime.now());
         user.setRoles(roles);
 
@@ -89,12 +90,17 @@ class UserServiceTest {
         UserRegisterResponse registeredUser = userService.register(userRegisterRequest);
 
         assertEquals(registeredUser.getEmail(), userRegisterRequest.getEmail());
+        assertEquals(registeredUser.getRoles().isEmpty(), false);
+        assertNotEquals(user.getPassword(), passwordStr);
+        assertEquals(registeredUser.getEmail(), userRegisterRequest.getEmail());
+        assertEquals(registeredUser.getRegisterDate(), user.getRegisterDate());
+        assertEquals(registeredUser.getName(), user.getName());
 
 
     }
 
     @Test
-    void registerWithExistEmail () {
+    void registerWithExistEmail() {
 
         // test registering with already saved email (get exception)
 
@@ -106,18 +112,16 @@ class UserServiceTest {
 
         when(userRepository.existsByEmail(newUserRegisterRequest.getEmail())).thenReturn(true);
 
-        String msg ="";
+        String msg = "";
 
-        try{
+        try {
             userService.register(newUserRegisterRequest);
 
-        }catch(Exception e) {
-            msg=e.getMessage();
+        } catch (Exception e) {
+            msg = e.getMessage();
         }
-
-        assertEquals(msg,"Email already exist:mail1@mail.com");
+        assertEquals(msg, "Email already exist:mail1@mail.com");
     }
-
 
     @Test
     void findByExistId() {
@@ -126,8 +130,26 @@ class UserServiceTest {
 
         Role role1 = new Role();
         role1.setName(RoleType.ROLE_BASIC);
-        role1.setId(5);
+        role1.setId(1);
+
+        Role role2 = new Role();
+        role2.setName(RoleType.ROLE_CUSTOMER);
+        role2.setId(2);
+
+        Role role3 = new Role();
+        role3.setName(RoleType.ROLE_MANAGER);
+        role3.setId(3);
+
+        Role role4 = new Role();
+        role4.setName(RoleType.ROLE_ADMIN);
+        role4.setId(4);
+
+
         roles.add(role1);
+        roles.add(role2);
+        roles.add(role3);
+        roles.add(role4);
+
 
         User user = new User();
         user.setId(1L);
@@ -136,13 +158,18 @@ class UserServiceTest {
         user.setRoles(roles);
 
         LocalDateTime today = LocalDateTime.now();
-        Set<String> rolesStr = new HashSet<>();
-        rolesStr.add("Basic User");
 
-        UserResponse mappedUser = new UserResponse(1L,"Name Surname", "mail1@mail.com",today,rolesStr);
+        Set<String> rolesStr = new HashSet<>();
+        rolesStr.add("Basic");
+        rolesStr.add("Customer");
+        rolesStr.add("Manager");
+        rolesStr.add("Admin");
+
+        UserResponse mappedUser = new UserResponse(user);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
         when(userMapper.userToUserResponse(Mockito.any(User.class))).thenReturn(mappedUser);
+        mappedUser.setRoles(roles);
 
         UserResponse foundUser = userService.findById(user.getId());
 
@@ -168,26 +195,25 @@ class UserServiceTest {
 
         LocalDateTime today = LocalDateTime.now();
         Set<String> rolesStr = new HashSet<>();
-        rolesStr.add("Basic User");
+        rolesStr.add("Basic");
 
-        UserResponse mappedUser = new UserResponse(1L,"Name Surnam","mail1@mail.com",today,rolesStr);
+        UserResponse mappedUser = new UserResponse(1L, "Name Surnam", "mail1@mail.com", today, rolesStr);
 
         when(userRepository.findById(anyLong())).thenThrow(new ResourceNotFoundException(String.format(
                 com.contactlistapp.exception.message.ErrorMessage.RESOURCE_NOT_FOUND_MESSAGE, user.getId())));
 
 
-        String msg ="";
+        String msg = "";
 
-        try{
+        try {
             userService.findById(user.getId());
 
-        }catch(Exception e) {
-            msg=e.getMessage();
+        } catch (Exception e) {
+            msg = e.getMessage();
         }
 
-        assertEquals(msg,"Resource with id 1 not found");
+        assertEquals(msg, "Resource with id 1 not found");
     }
-
 
 
     @Test
@@ -195,11 +221,12 @@ class UserServiceTest {
 
         LocalDateTime today = LocalDateTime.now();
         Set<String> rolesStr = new HashSet<>();
-        rolesStr.add("Basic User");
+        rolesStr.add("Basic");
 
-        UserResponse user1 = new UserResponse(1L,"Name Surname", "mail1@mail.com",today,rolesStr);
-        UserResponse user2 = new UserResponse(2L,"Name2 Surname2", "mail2@mail.com",today,rolesStr);
-        UserResponse user3 = new UserResponse(3L,"Name3 Surname3","mail3@mail.com",today,rolesStr);
+        UserResponse user1 = new UserResponse(1L, "Name Surname", "mail1@mail.com", today, rolesStr);
+        UserResponse user2 = new UserResponse(2L, "Name2 Surname2", "mail2@mail.com", today, rolesStr);
+        UserResponse user3 = new UserResponse(3L, "Name3 Surname3", "mail3@mail.com", today, rolesStr);
+
 
         List<UserResponse> users = new ArrayList<>();
         users.add(user1);
@@ -207,18 +234,19 @@ class UserServiceTest {
         users.add(user3);
 
 
-        final int start = (int)pageable.getOffset();
+        final int start = (int) pageable.getOffset();
         final int end = Math.min((start + pageable.getPageSize()), users.size());
         final Page<UserResponse> pageUsers = new PageImpl<>(users.subList(start, end), pageable, users.size());
 
         when(userRepository.getAllUsersByPage(any())).thenReturn(pageUsers);
 
-        userService.getUsersByPage("",pageable);
-        userService.getUsersByPage("a",pageable);
+        userService.getUsersByPage("", pageable);
+        userService.getUsersByPage("a", pageable);
 
         verify(userRepository, times(1)).getAllUsersByPage(pageable);
-        verify(userRepository, times(1)).getFilteredUsersWithQ("a",pageable);
+        verify(userRepository, times(1)).getFilteredUsersWithQ("a", pageable);
         verifyNoMoreInteractions(userRepository);
+        assertEquals(3, pageUsers.getTotalElements());
 
     }
 
@@ -231,27 +259,54 @@ class UserServiceTest {
         updateUser1.setName("Name Surname");
         updateUser1.setEmail("mail1@mail.com");
         updateUser1.setPassword("12345");
+        updateUser1.setRegisterDate(today);
 
         Set<Role> roles = new HashSet<>();
 
         Role role1 = new Role();
         role1.setName(RoleType.ROLE_BASIC);
-        role1.setId(5);
+        role1.setId(1);
         roles.add(role1);
+
+        Role role2 = new Role();
+        role2.setName(RoleType.ROLE_CUSTOMER);
+        role2.setId(2);
+
+
+        Role role3 = new Role();
+        role3.setName(RoleType.ROLE_MANAGER);
+        role3.setId(3);
+
+        Role role4 = new Role();
+        role4.setName(RoleType.ROLE_ADMIN);
+        role4.setId(4);
 
         Set<String> rolesStr = new HashSet<>();
         rolesStr.add("Basic");
+        rolesStr.add(("Customer"));
+        rolesStr.add(("Manager"));
+        rolesStr.add(("Admin"));
 
-        User user1 = new User(1L,"Name Surname","mail1@mail.com","12345",today,roles);
+        User user1 = new User(1L, "Name Surname", "mail1@mail.com", "12345", today, roles);
 
         when(userRepository.findById(userId1)).thenReturn(Optional.of(user1));
         when(userRepository.save(Mockito.any(User.class))).thenReturn(user1);
-        UserResponse updatedUser1 = new UserResponse(1L,"Name Surname","mail1@mail.com",today,rolesStr);
+        UserResponse updatedUser1 = new UserResponse(1L, "Name Surname", "mail1@mail.com", today, rolesStr);
         when(userMapper.userToUserResponse(Mockito.any(User.class))).thenReturn(updatedUser1);
 
-        assertEquals(updatedUser1.getId(),userService.userUpdate(userId1,updateUser1).getId());
-    }
+        UserResponse userResponse = userService.userUpdate(userId1, updateUser1);
 
+        assertAll(
+                () -> assertEquals(updatedUser1.getId(), userResponse.getId()),
+                () -> assertEquals(updatedUser1.getName(), userResponse.getName()),
+                () -> assertEquals(updatedUser1.getEmail(), userResponse.getEmail()),
+                () -> assertEquals(updatedUser1.getRegisterDate(), userResponse.getRegisterDate()),
+                () -> assertEquals(updatedUser1.getRoles(), userResponse.getRoles()),
+                () -> assertTrue(userResponse.getRoles().contains("Customer"))
+
+        );
+
+    }
 
 
     @Test
@@ -261,41 +316,39 @@ class UserServiceTest {
         LocalDateTime today = LocalDateTime.now();
 
         updateUser1.setName("Name Surname");
-        updateUser1.setEmail("mail1@mail.com");
+        updateUser1.setEmail("mail@mail.com");
         updateUser1.setPassword("12345");
 
         Set<Role> roles = new HashSet<>();
 
         Role role1 = new Role();
         role1.setName(RoleType.ROLE_BASIC);
-        role1.setId(5);
+        role1.setId(1);
+
         roles.add(role1);
 
         Set<String> rolesStr = new HashSet<>();
         rolesStr.add("Basic");
 
-        User user1 = new User(1L,"Name Surname","mail1@mail.com","12345",today,roles);
+
+        User user1 = new User(1L, "Name Surname", "exist@mail.com", "12345", today, roles);
 
         when(userRepository.findById(userId1)).thenReturn(Optional.of(user1));
-        when(userRepository.existsByEmail(updateUser1.getEmail())&& !updateUser1.getEmail().equals(user1.getEmail()))
-                .thenThrow(new ConflictException(String.format(
-                        ErrorMessage.EMAIL_ALREADY_EXIST, updateUser1.getEmail())));
 
+        when(userRepository.existsByEmail(updateUser1.getEmail())).thenReturn(true);
 
+        String msg = "";
 
-        String msg ="";
+        try {
+            userService.userUpdate(userId1, updateUser1);
 
-        try{
-            userService.userUpdate(1L,updateUser1);
-
-        }catch(Exception e) {
-            msg=e.getMessage();
+        } catch (Exception e) {
+            msg = e.getMessage();
         }
 
-        assertEquals(msg,"Email already exist:"+updateUser1.getEmail());
+        assertEquals(msg, "Email already exist:" + user1.getEmail());
 
     }
-
 
 
     @Test
@@ -358,7 +411,8 @@ class UserServiceTest {
         user.setRoles(userCreateRequest.getRoles());
 
         Set<String> rolesStr = new HashSet<>();
-        rolesStr.add("BASIC_USER");
+        rolesStr.add("Basic");
+
 
         when(userRepository.save(Mockito.any(User.class))).thenReturn(user);
         when(userRepository.findByEmail(userCreateRequest.getEmail())).thenReturn(Optional.of(user));
@@ -370,6 +424,38 @@ class UserServiceTest {
         UserRegisterResponse registeredUser = userService.userCreate(userCreateRequest);
 
         assertEquals(registeredUser.getEmail(), userCreateRequest.getEmail());
+
+    }
+
+    @Test
+    void userCreateByAdmiWithExistEmailn() {
+
+        Set<Role> roles = new HashSet<>();
+
+        Role role = new Role();
+        role.setName(RoleType.ROLE_BASIC);
+        role.setId(5);
+        roles.add(role);
+
+        UserCreateRequest userCreateRequest = new UserCreateRequest();
+        userCreateRequest.setName("Name Surname");
+        userCreateRequest.setEmail("exist@mail.com");
+        userCreateRequest.setPassword("12345");
+        userCreateRequest.setRoles(roles);
+
+
+        String existEmail = "exist@mail.com";
+        when(userRepository.existsByEmail(userCreateRequest.getEmail())).thenReturn(true);
+        String msg = "";
+
+        try {
+            userService.userCreate(userCreateRequest);
+
+        } catch (Exception e) {
+            msg = e.getMessage();
+        }
+
+        assertEquals(msg, "Email already exist:" + userCreateRequest.getEmail());
 
 
     }

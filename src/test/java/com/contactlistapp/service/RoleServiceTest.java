@@ -35,7 +35,7 @@ class RoleServiceTest {
         when(roleService.existsByName(role1.getName())).thenReturn(true);
 
         Boolean result = roleService.existsByName(role1.getName());
-        assertEquals(result,true);
+        assertEquals(result, true);
 
 
     }
@@ -43,14 +43,20 @@ class RoleServiceTest {
     @Test
     void findByName() {
 
-
         Role role1 = new Role();
         role1.setId(1);
         role1.setName(RoleType.ROLE_BASIC);
 
         when(roleRepository.findByName(RoleType.ROLE_BASIC)).thenReturn(Optional.of(role1));
-        Role role = roleService.findByName(RoleType.ROLE_BASIC);
-        assertEquals(role.getName().name(),"ROLE_BASIC");
+
+        Role checkRole1 = roleService.findByName(RoleType.ROLE_BASIC);
+
+        assertAll(
+                () -> assertEquals(checkRole1.getId(), 1),
+                () -> assertEquals(checkRole1.toString(), "ROLE_BASIC"),
+                () -> assertEquals(checkRole1.getName().name(), "ROLE_BASIC")
+
+        );
     }
 
     @Test
@@ -60,7 +66,8 @@ class RoleServiceTest {
         role1.setName(RoleType.ROLE_BASIC);
 
         when(roleRepository.save(role1)).thenReturn(role1);
-        roleService.saveRole(role1);;
+        roleService.saveRole(role1);
+        ;
         verify(roleRepository, times(1)).save(role1);
     }
 
@@ -69,7 +76,7 @@ class RoleServiceTest {
         List<String> existRolesList = new ArrayList<>();
 
         Role role1 = new Role(1, RoleType.ROLE_BASIC);
-        Role role2 = new Role(2,RoleType.ROLE_ADMIN);
+        Role role2 = new Role(2, RoleType.ROLE_ADMIN);
 
         existRolesList.add(role2.getName().toString());
 

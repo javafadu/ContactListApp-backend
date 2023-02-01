@@ -29,18 +29,16 @@ public class UserResponse {
 
         for (Role r:roles
         ) {
-            if(r.getName().equals(RoleType.ROLE_BASIC)) {
-                rolesStr.add("Basic");
-            } else if (r.getName().equals(RoleType.ROLE_CUSTOMER)) {
+            if(r.getName().equals(RoleType.ROLE_CUSTOMER)) {
                 rolesStr.add("Customer");
             } else if (r.getName().equals(RoleType.ROLE_MANAGER)) {
                 rolesStr.add("Manager");
-            }  else if (r.getName().equals(RoleType.ROLE_ADMIN)) {
+            } else if (r.getName().equals(RoleType.ROLE_ADMIN)) {
                 rolesStr.add("Admin");
+            }  else  {
+                rolesStr.add("Basic");
             }
-            else {
-                rolesStr.add("Anonymous");
-            }
+
         }
 
         this.roles=rolesStr;
@@ -50,6 +48,7 @@ public class UserResponse {
 
     public UserResponse(User user) {
         this.id = user.getId();
+        this.name=user.getName();
         this.email = user.getEmail();
         this.registerDate = user.getRegisterDate();
         this.roles=getRoles();

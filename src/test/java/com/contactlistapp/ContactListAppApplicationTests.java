@@ -10,4 +10,9 @@ class ContactListAppApplicationTests {
     void contextLoads() {
     }
 
+    @Test
+    void main() {
+        ContactListAppApplication.main(new String[] {});
+    }
+
 }
