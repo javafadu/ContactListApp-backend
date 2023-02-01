@@ -35,39 +35,21 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
     private UserMapper userMapper;
 
-    // 1- ADD ROLES from ENUMS to DB
-    public List<String> addRoles() {
-        // create a blank list to be added already exist roles in DB
-        List<String> existRolesList = new ArrayList<>();
 
-        for (RoleType each : RoleType.values()
-        ) {
-            if (!roleService.existsByName(each)) {
-                Role role = new Role();
-                role.setName(each);
-                roleService.saveRole(role);
-            } else {
-                existRolesList.add(each.name());
-            }
-        }
-
-        return existRolesList;
-    }
-
-
-    // 2- REGISTER a USER (UserJWTController)
+    // ***** REGISTER a USER (UserJWTController) *****
     public UserRegisterResponse register(UserRegisterRequest registerRequest) {
         // Check1: e-mail if exist or not
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
             throw new RuntimeException(String.format(ErrorMessage.
                     EMAIL_ALREADY_EXIST, registerRequest.getEmail()));
         }
-        // keep the encoded password in DB
+        // encode the password (to be kept in DB as encoded)
         String encodedPassword = passwordEncoder.encode(registerRequest.getPassword());
 
-        // Check2: First registration role of user is Member, so it should be added into the tbl_roles
+        // Check2: First registration role of user is BASIC, so it should be added into the tbl_roles
         // before registration and assign it to role of the registering user
-        Role role = roleService.findByName(RoleType.ROLE_BASIC);;
+        Role role = roleService.findByName(RoleType.ROLE_BASIC);
+        ;
         Set<Role> roles = new HashSet<>();
         roles.add(role);
 
@@ -87,26 +69,27 @@ public class UserService {
 
         return userMapper.userToUserRegisterResponse(registeredUser);
     }
-    // 3- Find a USER with ID
+
+    // ***** Find a USER with ID *****
     public UserResponse findById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(
-                com.contactlistapp.exception.message.ErrorMessage.RESOURCE_NOT_FOUND_MESSAGE, id)
-        ));
+                        com.contactlistapp.exception.message.ErrorMessage.RESOURCE_NOT_FOUND_MESSAGE, id)
+                ));
         return userMapper.userToUserResponse(user);
     }
-    // 4- Get All Users or Searched Users by Page by ADMIN
+
+    // ***** Get All Users or Searched Users by Page by ADMIN *****
     public Page<UserResponse> getUsersByPage(String q, Pageable pageable) {
 
         if (!q.isEmpty()) {
             return userRepository.getFilteredUsersWithQ(q.toLowerCase(), pageable);
         } else {
             return userRepository.getAllUsersByPage(pageable);
-
         }
-
     }
-    // 5- Update a user with ID by ADMIN
+
+    // ***** Update a user with ID by ADMIN *****
     public UserResponse userUpdate(Long id, UserUpdateRequest userUpdateRequest) {
         // Check1: control if the user exist or not with the requsted id
         User user = userRepository.findById(id).orElseThrow(
@@ -134,7 +117,7 @@ public class UserService {
         return userResponse;
     }
 
-    // 6- Delete a user with ID by ADMIN
+    // ***** Delete a user with ID by ADMIN *****
     public UserResponse deleteUser(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format(ErrorMessage.RESOURCE_NOT_FOUND_MESSAGE, id)));
 
@@ -142,13 +125,12 @@ public class UserService {
         return userMapper.userToUserResponse(user);
     }
 
+    // ***** Create a User by ADMIN *****
     public UserRegisterResponse userCreate(UserCreateRequest userCreateRequest) {
         // Check1: e-mail if exist or not
         if (userRepository.existsByEmail(userCreateRequest.getEmail())) {
             throw new RuntimeException(String.format(ErrorMessage.EMAIL_ALREADY_EXIST, userCreateRequest.getEmail()));
         }
-        // encode the string password as crypted
-
 
         // Creation Date should be now
         LocalDateTime today = LocalDateTime.now();
@@ -168,6 +150,7 @@ public class UserService {
         return userMapper.userToUserRegisterResponse(registeredUser);
     }
 
+    // ***** Encode password  *****
     public String encodePassword(String password) {
         return passwordEncoder.encode(password);
     }
