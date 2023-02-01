@@ -31,7 +31,6 @@ public class User {
     @Column(length =180, nullable = false, unique = true)
     private String email;
 
-    @JsonIgnore
     @Column(length =120, nullable = false)
     private String password;
 

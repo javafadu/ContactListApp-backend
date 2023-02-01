@@ -9,6 +9,7 @@ import com.contactlistapp.dto.request.UserRegisterRequest;
 import com.contactlistapp.dto.request.UserUpdateRequest;
 import com.contactlistapp.dto.response.UserRegisterResponse;
 import com.contactlistapp.dto.response.UserResponse;
+import com.contactlistapp.exception.BadRequestException;
 import com.contactlistapp.exception.ConflictException;
 import com.contactlistapp.exception.ResourceNotFoundException;
 import com.contactlistapp.exception.message.ErrorMessage;
@@ -74,7 +75,7 @@ public class UserService {
     public UserResponse findById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format(
-                        com.contactlistapp.exception.message.ErrorMessage.RESOURCE_NOT_FOUND_MESSAGE, id)
+                        ErrorMessage.RESOURCE_NOT_FOUND_MESSAGE, id)
                 ));
         return userMapper.userToUserResponse(user);
     }
@@ -129,7 +130,7 @@ public class UserService {
     public UserRegisterResponse userCreate(UserCreateRequest userCreateRequest) {
         // Check1: e-mail if exist or not
         if (userRepository.existsByEmail(userCreateRequest.getEmail())) {
-            throw new RuntimeException(String.format(ErrorMessage.EMAIL_ALREADY_EXIST, userCreateRequest.getEmail()));
+            throw new BadRequestException(String.format(ErrorMessage.EMAIL_ALREADY_EXIST, userCreateRequest.getEmail()));
         }
 
         // Creation Date should be now
