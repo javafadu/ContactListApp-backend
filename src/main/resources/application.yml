@@ -8,9 +8,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://ec2-34-248-169-69.eu-west-1.compute.amazonaws.com/d16iip5986nf9k
-    username: fihqgkxhodahco
-    password: afe8ea2de94c057f85b6f89a35f8a9484dba2579a5bd10286538cab8921a8dd9
+    url: jdbc:postgresql://localhost:5432/contactlist_db
+    username: contactlist_user
+    password: 12345
     driver-class-name: org.postgresql.Driver
   jpa:
     show-sql: true
@@ -19,3 +19,26 @@ spring:
       ddl-auto: update
     properties:
       format-sql: true
+
+
+contactlist:
+  app:
+    jwtSecret: contact@List@372
+    jwtExpirationMs: 86400000
+
+logging:
+  file:
+    name: logs/contactlist.log
+  pattern:
+    file: "%d %-5level [%thread] %logger:%msg%n"
+  level:
+    '[org.springframework.web]': WARN
+    '[org.hibernate]': INFO
+    '[com.citylist]': INFO
+
+info:
+  application:
+    name: 'Contact List Backend Application'
+    description: 'This is Contact List Backend App developed by Feridun OZCELIK'
+    version: '@project.version@'
+
