@@ -5,6 +5,7 @@ import com.contactlistapp.dto.request.UserRegisterRequest;
 import com.contactlistapp.dto.response.LoginResponse;
 import com.contactlistapp.dto.response.UserRegisterResponse;
 import com.contactlistapp.security.jwt.JwtUtils;
+import com.contactlistapp.service.RoleService;
 import com.contactlistapp.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,44 +27,20 @@ import java.util.Map;
 public class UserJwtController {
 
     private UserService userService;
+    private RoleService roleService;
     private AuthenticationManager authManager;
     private JwtUtils jwtUtils;
 
 
-    // 1- ADD ROLES from enum to DB, before registering a user.
-    // endpoint: [{server_url}/addroles
-    @GetMapping("/addroles")
-    public ResponseEntity<Map<String,String>> addRoles() {
 
-        List<String> existRolesList = userService.addRoles();
-        Map<String, String> map = new HashMap<>();
-        map.put("message", "All roles have been inserted into DB");
-        map.put("status", "true");
-
-        return new ResponseEntity<>(map, HttpStatus.CREATED);
-    }
-    // 2- Register a User
-    // endpoint: [{server_url}/register
-    /*
-
-    {
-    "email": "admin@mail.com",
-    "password": "12345"
-    }
-     */
+    // 1- Register a User
     @PostMapping("/register")
     public ResponseEntity<UserRegisterResponse> register(@Valid @RequestBody UserRegisterRequest registerRequest){
         UserRegisterResponse userRegisterResponse = userService.register(registerRequest);
         return new ResponseEntity<>(userRegisterResponse, HttpStatus.CREATED);
-    }
-    /* 3- Login
-     endpoint: [{server_url}/login
-    json Body
-    {
-    "email": "walter@mail.com",
-    "password": "12345"
-    }
-     */
+    };
+
+    // 3- Login
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> authenticate(@Valid @RequestBody LoginRequest loginRequest) {
         // STEP1 : get username and password and authenticate
