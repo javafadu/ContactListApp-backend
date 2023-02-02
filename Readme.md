@@ -2,6 +2,11 @@
 
 This application was created to demonstrate a fully fledged full-stack application built with Spring boot + Spring Security including CRUD operations, authentication, pagination, and more.
 
+## Technology Used
+* Java Version: 11
+* Spring Boot Version: 2.7.8
+* jjwt Version: 0.9.1
+* mapstruct Version: 1.4.2
 
 # Layers
 
@@ -19,7 +24,8 @@ This is a spring boot monolithic application, it includes below layers
 # Security
 
 Integration with Spring Security and add other filter for jwt token process.
-The secret key is stored in `application.yml`.
+The secret key is stored in `application.yml`.<br />
+__Super Admin__ : System automatically creates super admin account on startup 
 
 # Database
 
