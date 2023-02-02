@@ -25,7 +25,7 @@ This is a spring boot monolithic application, it includes below layers
 
 Integration with Spring Security and add other filter for jwt token process.
 The secret key is stored in `application.yml`.<br />
-Super Admin : System automatically creates super admin account on startup 
+__Super Admin__ : System automatically creates super admin account on startup 
 
 # Database
 
