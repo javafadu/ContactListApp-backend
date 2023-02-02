@@ -6,6 +6,7 @@ import com.contactlistapp.dto.request.LoginRequest;
 import com.contactlistapp.dto.request.UserRegisterRequest;
 import com.contactlistapp.dto.response.LoginResponse;
 import com.contactlistapp.dto.response.UserRegisterResponse;
+import com.contactlistapp.exception.CustomExceptionHandler;
 import com.contactlistapp.security.jwt.JwtUtils;
 import com.contactlistapp.service.UserService;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,10 +39,9 @@ class UserJwtControllerTest {
 
     @Mock
     private UserService userService;
-    @Mock
-    private AuthenticationManager authManager;
-    @Mock
-    private JwtUtils jwtUtils;
+
+    private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
 
     @Test
     void register() {
@@ -80,14 +83,31 @@ class UserJwtControllerTest {
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setToken(token);
 
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
-        Authentication authentication = authManager.authenticate(authToken);
-
-        when(jwtUtils.generateJwtToken(authentication)).thenReturn(token);
+        when(userService.authenticate(loginRequest)).thenReturn(loginResponse);
 
         ResponseEntity<LoginResponse> res = userJwtController.authenticate(loginRequest);
 
         assertEquals(HttpStatus.OK, res.getStatusCode());
         assertEquals(res.getBody().getToken(),token);
     }
+
+
+    @Test
+    void authenticateWithEmptyEmail() {
+        LoginRequest loginRequest = new LoginRequest();
+        //loginRequest.setEmail("mail1@mail.com");
+        loginRequest.setPassword("12345");
+
+        String token = "123456789";
+
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setToken(token);
+
+        Set<ConstraintViolation<LoginRequest>> violations = validator.validate(loginRequest);
+
+        assertTrue(violations.isEmpty());
+
+
+    }
+
 }

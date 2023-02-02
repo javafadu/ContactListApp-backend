@@ -4,9 +4,11 @@ import com.contactlistapp.domain.Role;
 import com.contactlistapp.domain.User;
 import com.contactlistapp.domain.enums.RoleType;
 import com.contactlistapp.dto.mapper.UserMapper;
+import com.contactlistapp.dto.request.LoginRequest;
 import com.contactlistapp.dto.request.UserCreateRequest;
 import com.contactlistapp.dto.request.UserRegisterRequest;
 import com.contactlistapp.dto.request.UserUpdateRequest;
+import com.contactlistapp.dto.response.LoginResponse;
 import com.contactlistapp.dto.response.UserRegisterResponse;
 import com.contactlistapp.dto.response.UserResponse;
 import com.contactlistapp.exception.BadRequestException;
@@ -15,9 +17,13 @@ import com.contactlistapp.exception.ResourceNotFoundException;
 import com.contactlistapp.exception.message.ErrorMessage;
 import com.contactlistapp.repository.RoleRepository;
 import com.contactlistapp.repository.UserRepository;
+import com.contactlistapp.security.jwt.JwtUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +41,8 @@ public class UserService {
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
     private UserMapper userMapper;
+    private AuthenticationManager authManager;
+    private JwtUtils jwtUtils;
 
 
     // ***** REGISTER a USER (UserJWTController) *****
@@ -70,6 +78,24 @@ public class UserService {
 
         return userMapper.userToUserRegisterResponse(registeredUser);
     }
+
+
+    // ***** Login  *****
+    public LoginResponse authenticate(LoginRequest loginRequest) {
+        // STEP1 : get username and password and authenticate
+        // (using AuthenticationManager in WebSecurityConfig)
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
+        Authentication authentication = authManager.authenticate(authToken);
+        // STEP2 : no exception in Step2, means successfully login, generate Jwt Token
+        String token = jwtUtils.generateJwtToken(authentication);
+        LoginResponse response = new LoginResponse();
+        response.setToken(token);
+
+        return  response;
+
+    }
+
 
     // ***** Find a USER with ID *****
     public UserResponse findById(Long id) {

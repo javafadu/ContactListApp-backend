@@ -27,10 +27,6 @@ import java.util.Map;
 public class UserJwtController {
 
     private UserService userService;
-    private RoleService roleService;
-    private AuthenticationManager authManager;
-    private JwtUtils jwtUtils;
-
 
 
     // 1- Register a User
@@ -40,19 +36,9 @@ public class UserJwtController {
         return new ResponseEntity<>(userRegisterResponse, HttpStatus.CREATED);
     };
 
-    // 3- Login
+    // 2- Login
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> authenticate(@Valid @RequestBody LoginRequest loginRequest) {
-        // STEP1 : get username and password and authenticate
-        // (using AuthenticationManager in WebSecurityConfig)
-        UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
-        Authentication authentication = authManager.authenticate(authToken);
-
-        // STEP2 : no exception in Step2, means successfully login, generate Jwt Token
-        String token = jwtUtils.generateJwtToken(authentication);
-        LoginResponse response = new LoginResponse();
-        response.setToken(token);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(userService.authenticate(loginRequest), HttpStatus.OK);
     }
 }
