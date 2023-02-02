@@ -63,7 +63,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             logger.error("Cannot set user authentication: {}", e);
         }
-
         filterChain.doFilter(request, response);
     }
 
@@ -84,7 +83,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             return headerAuth.substring(7, headerAuth.length());
             // ("Bearer "(Token starts here (7. index) to end)
         }
-
         return null;
     }
 }

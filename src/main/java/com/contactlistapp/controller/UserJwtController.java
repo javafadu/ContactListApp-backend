@@ -23,7 +23,6 @@ import java.util.Map;
 @RestController
 @RequestMapping
 @AllArgsConstructor
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class UserJwtController {
 
     private UserService userService;
@@ -31,7 +30,7 @@ public class UserJwtController {
 
     // 1- Register a User
     @PostMapping("/register")
-    public ResponseEntity<UserRegisterResponse> register(@Valid @RequestBody UserRegisterRequest registerRequest){
+    public ResponseEntity<UserRegisterResponse> register(@Valid @RequestBody UserRegisterRequest registerRequest) {
         UserRegisterResponse userRegisterResponse = userService.register(registerRequest);
         return new ResponseEntity<>(userRegisterResponse, HttpStatus.CREATED);
     };

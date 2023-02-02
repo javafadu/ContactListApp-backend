@@ -22,7 +22,6 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("/users")
 @AllArgsConstructor
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class UserAuthController {
 
     private UserService userService;
@@ -77,7 +76,7 @@ public class UserAuthController {
     // 6- Create a user by ADMIN
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserRegisterResponse> register(@Valid @RequestBody UserCreateRequest userCreateRequest){
+    public ResponseEntity<UserRegisterResponse> register(@Valid @RequestBody UserCreateRequest userCreateRequest) {
 
         UserRegisterResponse userRegisterResponse = userService.userCreate(userCreateRequest);
         return new ResponseEntity<>(userRegisterResponse, HttpStatus.CREATED);

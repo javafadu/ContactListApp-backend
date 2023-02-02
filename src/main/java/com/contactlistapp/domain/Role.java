@@ -16,7 +16,7 @@ import javax.persistence.*;
 
 
 @Entity
-@Table(name ="tbl_roles")
+@Table(name = "tbl_roles")
 public class Role {
 
     @Id
@@ -29,7 +29,7 @@ public class Role {
 
     @Override
     public String toString() {
-        return ""+name;
+        return "" + name;
     }
 }
 

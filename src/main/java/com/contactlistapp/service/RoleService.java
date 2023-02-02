@@ -18,7 +18,6 @@ public class RoleService {
 
     private RoleRepository roleRepository;
 
-
     public List<String> addRoles() {
         // create a blank list to be added already exist roles in DB
         List<String> existRolesList = new ArrayList<>();
@@ -33,7 +32,6 @@ public class RoleService {
                 existRolesList.add(each.name());
             }
         }
-
         return existRolesList;
     }
 
@@ -52,7 +50,5 @@ public class RoleService {
     public void saveRole(Role role) {
         roleRepository.save(role);
     }
-
-
 
 }

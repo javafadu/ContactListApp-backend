@@ -13,8 +13,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User,Long> {
+public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
+
     Boolean existsByEmail(String email);
 
     @Query("SELECT new com.contactlistapp.dto.response.UserResponse(user)  FROM User user where  lower(user.email) like %?1% ")

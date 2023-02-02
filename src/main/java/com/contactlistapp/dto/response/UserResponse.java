@@ -27,31 +27,28 @@ public class UserResponse {
     public void setRoles(Set<Role> roles) {
         Set<String> rolesStr = new HashSet<>();
 
-        for (Role r:roles
+        for (Role r : roles
         ) {
-            if(r.getName().equals(RoleType.ROLE_CUSTOMER)) {
+            if (r.getName().equals(RoleType.ROLE_CUSTOMER)) {
                 rolesStr.add("Customer");
             } else if (r.getName().equals(RoleType.ROLE_MANAGER)) {
                 rolesStr.add("Manager");
             } else if (r.getName().equals(RoleType.ROLE_ADMIN)) {
                 rolesStr.add("Admin");
-            }  else  {
+            } else {
                 rolesStr.add("Basic");
             }
-
         }
-
-        this.roles=rolesStr;
-
+        this.roles = rolesStr;
     }
 
 
     public UserResponse(User user) {
         this.id = user.getId();
-        this.name=user.getName();
+        this.name = user.getName();
         this.email = user.getEmail();
         this.registerDate = user.getRegisterDate();
-        this.roles=getRoles();
+        this.roles = getRoles();
         //  Set<Role> convert to Set<String> with above method
     }
 }

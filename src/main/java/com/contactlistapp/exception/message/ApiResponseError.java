@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class ApiResponseError {
 
     private HttpStatus status;
-    @JsonFormat(shape=JsonFormat.Shape.STRING,pattern="yyyy-MM-dd hh:mm:ss" )
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss")
     private LocalDateTime timestamp;
     private String message;
     private String requestURI;
@@ -21,21 +21,19 @@ public class ApiResponseError {
     // ****** Constructors ******
 
     private ApiResponseError() {
-        timestamp=LocalDateTime.now();
+        timestamp = LocalDateTime.now();
     }
 
     public ApiResponseError(HttpStatus status) {
         this(); // call above constructor
-        this.status=status;
+        this.status = status;
     }
 
-
-    public ApiResponseError(HttpStatus status,String message, String requestURI) {
+    public ApiResponseError(HttpStatus status, String message, String requestURI) {
         this(status); // call above constructor
-        this.message=message;
-        this.requestURI=requestURI;
+        this.message = message;
+        this.requestURI = requestURI;
     }
-
 
     // ****** Getters & Setters, exclude setTimestamp ******
 
@@ -50,8 +48,6 @@ public class ApiResponseError {
     public LocalDateTime getTimestamp() {
         return timestamp;
     }
-
-
 
     public String getMessage() {
         return message;

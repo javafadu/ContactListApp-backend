@@ -92,7 +92,7 @@ public class UserService {
         LoginResponse response = new LoginResponse();
         response.setToken(token);
 
-        return  response;
+        return response;
 
     }
 
@@ -147,7 +147,6 @@ public class UserService {
     // ***** Delete a user with ID by ADMIN *****
     public UserResponse deleteUser(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format(ErrorMessage.RESOURCE_NOT_FOUND_MESSAGE, id)));
-
         userRepository.delete(user);
         return userMapper.userToUserResponse(user);
     }
@@ -163,7 +162,6 @@ public class UserService {
         LocalDateTime today = LocalDateTime.now();
 
         User user = new User();
-
         user.setEmail(userCreateRequest.getEmail());
         user.setPassword(encodePassword(userCreateRequest.getPassword()));
         user.setRegisterDate(today);
@@ -183,10 +181,9 @@ public class UserService {
     }
 
     public UserResponse addAdminWithStart() {
-        if(userRepository.findAdminUsers(4).size()==0) {
+        if (userRepository.findAdminUsers(4).size() == 0) {
 
             Set<Role> roles = new HashSet<>();
-
             Role role1 = new Role();
             role1.setName(RoleType.ROLE_BASIC);
             role1.setId(1);

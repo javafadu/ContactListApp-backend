@@ -48,7 +48,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         // get all default error messages from validation fields and collect them in a list
-        List<String> errors =  ex.getBindingResult().getFieldErrors().stream().map(e->e.getDefaultMessage()).collect(Collectors.toList());
+        List<String> errors = ex.getBindingResult().getFieldErrors().stream().map(e -> e.getDefaultMessage()).collect(Collectors.toList());
 
         ApiResponseError error = new ApiResponseError(HttpStatus.BAD_REQUEST, errors.toString(), request.getDescription(false));
 

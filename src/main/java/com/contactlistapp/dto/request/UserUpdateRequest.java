@@ -23,11 +23,8 @@ public class UserUpdateRequest {
     @Email()
     @Size(min = 10, max = 180, message = "Your email '${validatedValue}' must be between {min} and {max} chars long")
     private String email;
-
     private String password;
-
     private LocalDateTime registerDate;
-
     private Set<Role> roles;
 
 
