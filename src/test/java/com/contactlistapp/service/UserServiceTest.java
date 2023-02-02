@@ -525,5 +525,37 @@ class UserServiceTest {
 
     }
 
+    @Test
+    void addAdminWithStart () {
+        Set<Role> roles = new HashSet<>();
+
+        Role role1 = new Role();
+        role1.setName(RoleType.ROLE_BASIC);
+        role1.setId(1);
+        Role role2 = new Role();
+        role2.setName(RoleType.ROLE_ADMIN);
+        role2.setId(4);
+
+        LocalDateTime today = LocalDateTime.now();
+
+        roles.add(role1);
+        roles.add(role2);
+
+        Set<String> rolesStr = new HashSet<>();
+        rolesStr.add("Basic");
+        rolesStr.add("Admin");
+
+        User user = new User(1L, "Name Surname","admin@mail.com","12345",today,roles);
+        UserResponse userResponse = new UserResponse(1L,"Name Surname","admin@mail.com",today,rolesStr);
+
+        when(userRepository.save(Mockito.any(User.class))).thenReturn(user);
+        when(userMapper.userToUserResponse(Mockito.any(User.class))).thenReturn(userResponse);
+
+        UserResponse createdUser = userService.addAdminWithStart();
+        assertEquals(createdUser.getEmail(), userResponse.getEmail());
+
+
+    }
+
 
 }

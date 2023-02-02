@@ -181,4 +181,34 @@ public class UserService {
     public String encodePassword(String password) {
         return passwordEncoder.encode(password);
     }
+
+    public UserResponse addAdminWithStart() {
+        if(userRepository.findAdminUsers(4).size()==0) {
+
+            Set<Role> roles = new HashSet<>();
+
+            Role role1 = new Role();
+            role1.setName(RoleType.ROLE_BASIC);
+            role1.setId(1);
+            Role role2 = new Role();
+            role2.setName(RoleType.ROLE_ADMIN);
+            role2.setId(4);
+
+            LocalDateTime today = LocalDateTime.now();
+
+            roles.add(role1);
+            roles.add(role2);
+
+            User user = new User();
+            user.setName("Admin User");
+            user.setEmail("admin@mail.com");
+            user.setRegisterDate(today
+            );
+            user.setPassword("$2a$10$Xzpn1ifcYqkDIm657qqJ2eQEper5yu4V1tuEtDm3B81XJ7YKDm0W2");
+            user.setRoles(roles);
+
+            return userMapper.userToUserResponse(userRepository.save(user));
+        }
+        return null;
+    }
 }
