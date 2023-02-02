@@ -38,9 +38,8 @@ The application contains unit test cases to cover both api test and service test
 
 # API Documentation
 
-[-- Swagger Document Link - -](#)
-<br>Demo username: customer@mail.com<br>
-Demo password: 12345
+[-- Swagger Document Link - -](https://contact-list-app.herokuapp.com/swagger-ui/index.html)
+
 
 # Contact
 
