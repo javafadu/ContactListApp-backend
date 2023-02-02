@@ -4,16 +4,17 @@ import com.contactlistapp.domain.Role;
 import com.contactlistapp.domain.User;
 import com.contactlistapp.domain.enums.RoleType;
 import com.contactlistapp.dto.mapper.UserMapper;
+import com.contactlistapp.dto.request.LoginRequest;
 import com.contactlistapp.dto.request.UserCreateRequest;
 import com.contactlistapp.dto.request.UserRegisterRequest;
 import com.contactlistapp.dto.request.UserUpdateRequest;
+import com.contactlistapp.dto.response.LoginResponse;
 import com.contactlistapp.dto.response.UserRegisterResponse;
 import com.contactlistapp.dto.response.UserResponse;
-import com.contactlistapp.exception.BadRequestException;
-import com.contactlistapp.exception.ConflictException;
 import com.contactlistapp.exception.ResourceNotFoundException;
 import com.contactlistapp.exception.message.ErrorMessage;
 import com.contactlistapp.repository.UserRepository;
+import com.contactlistapp.security.jwt.JwtUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,6 +22,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
@@ -28,10 +32,10 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
+
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -47,6 +51,10 @@ class UserServiceTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private UserMapper userMapper;
+    @Mock
+    private JwtUtils jwtUtils;
+    @Mock
+    private AuthenticationManager authManager;
 
     private static Pageable pageable = PageRequest.of(0, 5, Sort.by("registerDate", "DESC"));
 
@@ -54,10 +62,8 @@ class UserServiceTest {
     @Test
     void registerWithNewEmail() {
 
-        UserRegisterRequest userRegisterRequest = new UserRegisterRequest();
-        userRegisterRequest.setName("Name Surname");
-        userRegisterRequest.setEmail("mail1@mail.com");
-        userRegisterRequest.setPassword("12345");
+        UserRegisterRequest userRegisterRequest = new UserRegisterRequest("Name Surname", "mail1@mail.com","12345");
+
 
         Set<Role> roles = new HashSet<>();
 
@@ -99,11 +105,9 @@ class UserServiceTest {
 
     }
 
+    // test registering with already saved email (get exception)
     @Test
     void registerWithExistEmail() {
-
-        // test registering with already saved email (get exception)
-
 
         UserRegisterRequest newUserRegisterRequest = new UserRegisterRequest();
         newUserRegisterRequest.setName("Name Surname");
@@ -121,6 +125,29 @@ class UserServiceTest {
             msg = e.getMessage();
         }
         assertEquals(msg, "Email already exist:mail1@mail.com");
+    }
+
+
+
+    @Test
+    void authenticate() {
+        LoginRequest loginRequest = new LoginRequest("mail1@mail.com","12345");
+
+
+        String token = "123456789";
+
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setToken(token);
+
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
+        Authentication authentication = authManager.authenticate(authToken);
+
+        when(jwtUtils.generateJwtToken(authentication)).thenReturn(token);
+
+        userService.authenticate(loginRequest);
+
+        assertEquals(userService.authenticate(loginRequest).getToken(), token);
+
     }
 
     @Test
@@ -199,8 +226,12 @@ class UserServiceTest {
 
         UserResponse mappedUser = new UserResponse(1L, "Name Surnam", "mail1@mail.com", today, rolesStr);
 
-        when(userRepository.findById(anyLong())).thenThrow(new ResourceNotFoundException(String.format(
+        when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(null));
+
+                /* .thenThrow(new ResourceNotFoundException(String.format(
                 com.contactlistapp.exception.message.ErrorMessage.RESOURCE_NOT_FOUND_MESSAGE, user.getId())));
+                */
+
 
 
         String msg = "";
@@ -212,7 +243,7 @@ class UserServiceTest {
             msg = e.getMessage();
         }
 
-        assertEquals(msg, "Resource with id 1 not found");
+        assertEquals(msg, String.format(ErrorMessage.RESOURCE_NOT_FOUND_MESSAGE,user.getId()));
     }
 
 
@@ -252,14 +283,9 @@ class UserServiceTest {
 
     @Test
     void userUpdate() {
-        UserUpdateRequest updateUser1 = new UserUpdateRequest();
+
         Long userId1 = 1L; // user id to be updated
         LocalDateTime today = LocalDateTime.now();
-
-        updateUser1.setName("Name Surname");
-        updateUser1.setEmail("mail1@mail.com");
-        updateUser1.setPassword("12345");
-        updateUser1.setRegisterDate(today);
 
         Set<Role> roles = new HashSet<>();
 
@@ -267,6 +293,8 @@ class UserServiceTest {
         role1.setName(RoleType.ROLE_BASIC);
         role1.setId(1);
         roles.add(role1);
+
+        UserUpdateRequest updateUser1 = new UserUpdateRequest("Name Surname","mail1@mail.com","12345",today,roles);
 
         Role role2 = new Role();
         role2.setName(RoleType.ROLE_CUSTOMER);
@@ -291,7 +319,7 @@ class UserServiceTest {
 
         when(userRepository.findById(userId1)).thenReturn(Optional.of(user1));
         when(userRepository.save(Mockito.any(User.class))).thenReturn(user1);
-        UserResponse updatedUser1 = new UserResponse(1L, "Name Surname", "mail1@mail.com", today, rolesStr);
+        UserResponse updatedUser1 = new UserResponse(1L, updateUser1.getName(), "mail1@mail.com", today, rolesStr);
         when(userMapper.userToUserResponse(Mockito.any(User.class))).thenReturn(updatedUser1);
 
         UserResponse userResponse = userService.userUpdate(userId1, updateUser1);
@@ -346,9 +374,43 @@ class UserServiceTest {
             msg = e.getMessage();
         }
 
-        assertEquals(msg, "Email already exist:" + user1.getEmail());
+        assertEquals(msg,String.format(ErrorMessage.EMAIL_ALREADY_EXIST,user1.getEmail()));
 
     }
+
+    @Test
+    void userUpdateWithNonExistingId() {
+        UserUpdateRequest updateUser1 = new UserUpdateRequest();
+        Long userId1 = 1L; // user id to be updated
+        LocalDateTime today = LocalDateTime.now();
+
+        Set<Role> roles = new HashSet<>();
+
+        Role role1 = new Role();
+        role1.setName(RoleType.ROLE_BASIC);
+        role1.setId(1);
+        roles.add(role1);
+
+        updateUser1.setName("Name Surname");
+        updateUser1.setEmail("mail@mail.com");
+        updateUser1.setPassword("12345");
+        updateUser1.setRoles(roles);
+
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(null));
+
+        String msg = "";
+
+        try {
+            userService.userUpdate(userId1,updateUser1);
+
+        } catch (Exception e) {
+            msg = e.getMessage();
+        }
+
+        assertEquals(msg, String.format(ErrorMessage.RESOURCE_NOT_FOUND_MESSAGE,userId1));
+    }
+
 
 
     @Test
@@ -395,11 +457,7 @@ class UserServiceTest {
         role.setId(5);
         roles.add(role);
 
-        UserCreateRequest userCreateRequest = new UserCreateRequest();
-        userCreateRequest.setName("Name Surname");
-        userCreateRequest.setEmail("mail1@mail.com");
-        userCreateRequest.setPassword("12345");
-        userCreateRequest.setRoles(roles);
+        UserCreateRequest userCreateRequest = new UserCreateRequest("Name Surname","mail1@mail.com","12345",roles);
 
 
         User user = new User();
@@ -423,12 +481,19 @@ class UserServiceTest {
 
         UserRegisterResponse registeredUser = userService.userCreate(userCreateRequest);
 
-        assertEquals(registeredUser.getEmail(), userCreateRequest.getEmail());
+        assertAll(
+                ()-> assertEquals(registeredUser.getEmail(), userCreateRequest.getEmail()),
+                ()-> assertEquals(registeredUser.getName(),userCreateRequest.getName()),
+                ()-> assertEquals(registeredUser.getRegisterDate(),user.getRegisterDate()),
+                ()-> assertEquals(registeredUser.getRoles(),userCreateRequest.getRoles()),
+                ()-> assertEquals(registeredUser.getId(),mappedUser.getId())
+
+        );
 
     }
 
     @Test
-    void userCreateByAdmiWithExistEmailn() {
+    void userCreateByAdmiWithExistEmail() {
 
         Set<Role> roles = new HashSet<>();
 
