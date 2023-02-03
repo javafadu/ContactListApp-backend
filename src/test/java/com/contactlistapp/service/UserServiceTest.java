@@ -11,6 +11,7 @@ import com.contactlistapp.dto.request.UserUpdateRequest;
 import com.contactlistapp.dto.response.LoginResponse;
 import com.contactlistapp.dto.response.UserRegisterResponse;
 import com.contactlistapp.dto.response.UserResponse;
+import com.contactlistapp.exception.BadRequestException;
 import com.contactlistapp.exception.ResourceNotFoundException;
 import com.contactlistapp.exception.message.ErrorMessage;
 import com.contactlistapp.repository.UserRepository;
@@ -124,7 +125,7 @@ class UserServiceTest {
         } catch (Exception e) {
             msg = e.getMessage();
         }
-        assertEquals(msg, "Email already exist:mail1@mail.com");
+        assertEquals(msg, String.format(ErrorMessage.EMAIL_ALREADY_EXIST,newUserRegisterRequest.getEmail()));
     }
 
 
@@ -228,9 +229,6 @@ class UserServiceTest {
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(null));
 
-                /* .thenThrow(new ResourceNotFoundException(String.format(
-                com.contactlistapp.exception.message.ErrorMessage.RESOURCE_NOT_FOUND_MESSAGE, user.getId())));
-                */
 
 
 
@@ -511,16 +509,12 @@ class UserServiceTest {
 
         String existEmail = "exist@mail.com";
         when(userRepository.existsByEmail(userCreateRequest.getEmail())).thenReturn(true);
-        String msg = "";
 
-        try {
+        // change here
+
+        assertThrows(BadRequestException.class, ()-> {
             userService.userCreate(userCreateRequest);
-
-        } catch (Exception e) {
-            msg = e.getMessage();
-        }
-
-        assertEquals(msg, "Email already exist:" + userCreateRequest.getEmail());
+        });
 
 
     }
