@@ -162,6 +162,7 @@ public class UserService {
         LocalDateTime today = LocalDateTime.now();
 
         User user = new User();
+        user.setName(userCreateRequest.getName());
         user.setEmail(userCreateRequest.getEmail());
         user.setPassword(encodePassword(userCreateRequest.getPassword()));
         user.setRegisterDate(today);
