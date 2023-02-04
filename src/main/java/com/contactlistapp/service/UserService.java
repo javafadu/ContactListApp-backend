@@ -130,6 +130,9 @@ public class UserService {
         }
 
         user.setId(id);
+        if (userUpdateRequest.getName() != null) {
+            user.setName(userUpdateRequest.getName());
+        }
         user.setEmail(userUpdateRequest.getEmail());
         user.setRoles(userUpdateRequest.getRoles());
         if (userUpdateRequest.getRegisterDate() != null) {
