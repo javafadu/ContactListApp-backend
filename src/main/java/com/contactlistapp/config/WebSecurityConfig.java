@@ -20,17 +20,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.reactive.CorsConfigurationSource;
-import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+
 
 import java.util.Arrays;
 
 @Configuration
-@EnableWebFluxSecurity
-@EnableReactiveMethodSecurity
 @EnableGlobalMethodSecurity(
-        prePostEnabled = true)
+        // securedEnabled = true,
+        // jsr250Enabled = true,
+        prePostEnabled = true) // Authorization process on the methods
 public class WebSecurityConfig {
 
     @Autowired
@@ -68,26 +66,20 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .cors()
-                .and()
-                .csrf().disable()
+        http.cors().and().csrf().disable()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests().antMatchers(HttpMethod.OPTIONS, "/**").permitAll().and()
-                .authorizeRequests().antMatchers("/register", "/login", "/contacts", "/contacts/**", "/actuator/**").permitAll()
+                .authorizeRequests().antMatchers("/register", "/login","/contacts","/contacts/**","/actuator/**").permitAll()
                 .anyRequest().authenticated();
 
         http.authenticationProvider(authenticationProvider());
-
 
         // jwt validation before request
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
-
 
 
     private static final String AUTH_WHITE_LIST[] = {
