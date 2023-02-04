@@ -18,7 +18,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Boolean existsByEmail(String email);
 
-    @Query("SELECT new com.contactlistapp.dto.response.UserResponse(user)  FROM User user where  lower(user.email) like %?1% ")
+    @Query("SELECT new com.contactlistapp.dto.response.UserResponse(user)  FROM User user where  lower(user.email) like %?1% OR lower(user.name) like %?1%")
     Page<UserResponse> getFilteredUsersWithQ(String q, Pageable pageable);
 
     @Query("SELECT new com.contactlistapp.dto.response.UserResponse(u) FROM User u")
