@@ -63,7 +63,7 @@ class ContactControllerTest {
 
         Long contactId = 1L;
         when(contactService.findContactById(contactId)).thenReturn(contact1);
-        ResponseEntity<ContactResponse> response = contactController.getCityById(contactId);
+        ResponseEntity<ContactResponse> response = contactController.getContactById(contactId);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(contactId,response.getBody().getId());

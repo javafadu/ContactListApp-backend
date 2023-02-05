@@ -35,7 +35,7 @@ public class ContactController {
 
     // 2- GET a Contact with Id by anyone
     @GetMapping("/{id}")
-    public ResponseEntity<ContactResponse> getCityById(@PathVariable Long id) {
+    public ResponseEntity<ContactResponse> getContactById(@PathVariable Long id) {
         ContactResponse contactResponse = contactService.findContactById(id);
         return new ResponseEntity<>(contactResponse, HttpStatus.OK);
 

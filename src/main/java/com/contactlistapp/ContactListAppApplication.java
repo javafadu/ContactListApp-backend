@@ -17,11 +17,6 @@ public class ContactListAppApplication {
         SpringApplication.run(ContactListAppApplication.class, args);
     }
 
-    /*
-    @Bean
-    ApplicationListener<ApplicationReadyEvent> appReady(RoleService roleService){
-        return event -> roleService.addRoles();
-    }*/
 
     @Bean
     public CommandLineRunner demo(UserService userService, RoleService roleService) {
@@ -30,6 +25,8 @@ public class ContactListAppApplication {
             userService.addAdminWithStart();
         };
     }
+
+
 
 
 }

@@ -37,7 +37,7 @@ It uses a PostgreSQL database (cloud database is used as default so you do not n
 The application contains unit test cases to cover both api test and service test.
 
 # API Documentation
-
+_OpenAPI was used to generate REST APIs Document_<br/>
 [-- Swagger Document Link - -](https://contact-list-app.herokuapp.com/swagger-ui/index.html)
 
 

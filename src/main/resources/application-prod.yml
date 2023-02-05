@@ -1,0 +1,50 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${HOST}:${PORT}/${DBNAME}
+    username: ${DBUSERNAME}
+    password: ${DBPASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+# ORACLE SETTINGS
+# spring:
+#   datasource:
+#     url: jdbc:oracle:thin:@localhost:1521/contactlist_db
+#     username: contactlist_user
+#     password: 12345
+#     driver-class-name: oracle.jdbc.OracleDriver
+#   jpa:
+#     show-sql: true
+#     database-platform: org.hibernate.dialect.Oracle12cDialect
+#     hibernate:
+#       ddl-auto: update
+#     properties:
+#       format-sql: true
+
+contactlist:
+  app:
+    jwtSecret: ${SECRETKEY}
+    jwtExpirationMs: ${EXPPIRATIONTIME}
+
+logging:
+  file:
+    name: contactlist_prod.log
+  pattern:
+    file: "%d %-5level [%thread] %logger:%msg%n"
+  level:
+    '[org.springframework.web]': INFO
+    '[org.hibernate]': INFO
+    '[com.citylist]': INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ['info','health']
+  info:
+    env:
+      enabled: true
