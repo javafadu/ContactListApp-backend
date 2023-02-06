@@ -9,9 +9,9 @@ server:
 # POSTGRESQL SETTINGS
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/contactlist_db
-    username: contactlist_user
-    password: 12345
+    url: jdbc:postgresql://ec2-34-242-84-130.eu-west-1.compute.amazonaws.com:5432/dat0vaps280lhe
+    username: bvqowqruocembd
+    password: 31d4589d4a731d9c65a2e34be69b48fcf956520eaf50d7921e54a6ef334a69b1
     driver-class-name: org.postgresql.Driver
   jpa:
     show-sql: true
